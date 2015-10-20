@@ -1,0 +1,499 @@
+---
+title: "Practical Machine Learning course project"
+author: "Chris Palmer"
+date: "20 October 2015"
+output: html_document
+---
+
+## Introduction
+The following is a course project as part of the Coursera Data Science course run 
+by John Hopkins Bloomberg School of Public Health. The purpose of the project 
+is to demonstrate understanding of how to use machine learning for prediction.
+
+The goal of the project is to "use data from accelerometers on the belt, forearm, 
+arm, and dumbbell of 6 participants" to predict the manner in which participants 
+carried out a weight lifting exercise. This follows closely the goal of the original 
+study, which was to use sensors to understand how correctly participants were 
+performing a weight lifting exercise. Data from the study was generously made 
+available to Coursera by the authors: 
+Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. 
+Qualitative Activity Recognition of Weight Lifting Exercises. 
+Proceedings of 4th International Conference in Cooperation with SIGCHI 
+(Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013. 
+http://groupware.les.inf.puc-rio.br
+
+Data was collected from sensors attached to the arm, belt, glove, and dumbbell 
+while six young health participants were asked to perform one set of 10 repetitions 
+of the Unilateral Dumbbell Biceps Curl in five different ways: 
+
+- Class A - Exactly according to specification. 
+- Class B - Throwing the Elbow to the front. 
+- Class C - Lifting the Dumbbell only halfway. 
+- Class D - Lowering the Dumbbell only halfway. 
+- Class E - Throwing the Hips to the front.
+
+Class A corresponds to the specified correct execution of the exercise, while the 
+other 4 classes correspond to common mistakes. The training data variable identifying 
+each of the 5 exercise classes is named **"classe"** and is the value we need to 
+predict.
+
+The sensors consisted of integrated accelerometers, magnetometers, and gyroscopes. 
+Although the Coursera assignment refers to the sensor as an accelerometer only, 
+I have interpreted this as a generic label for the integrated sensor, especially 
+in light of the further statement in the assignment to "use any of the other variables 
+to predict with" (i.e. apart from classe which we are trying to predict). 
+
+The data was supplied to Coursera students in the form of two CSV files, a set of 
+training data consisting of 19622 records of 160 variables, and a set of 20 
+records of test data also consisting of 160 variables: The training data has the 
+*classe* variable, while the other variables consist of measurements from the 
+sensors; plus some calculated summary variables such as totals, averages, 
+variants and standard deviations; and fields identifying the participant and the 
+exercise session. The test data had "problem_id" field numbered 1 to 20 instead
+of classe.
+
+The training data for this project are available here: 
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
+
+The test data are available here: 
+
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+According to the [study documentation](http://groupware.les.inf.puc-rio.br/public/papers/2013.Velloso.QAR-WLE.pdf), 
+sessions were measured in over a number of seconds, with 2.5 seconds being the optimum 
+"window" of measurements for accurate measurement. During this time many signals 
+are collected and accumulated in a series of records, the last record in a set 
+receives the summary measures briefly described above. For the study the authors
+used a Random Forest machine learning algorithm, and identified 17 important 
+variables to use: In the belt - the mean and variance of the roll, maximum, range 
+and variance of the accelerometer vector, variance of the gyro and variance of 
+the magnetometer; in the arm - the variance of the accelerometer vector and the
+maximum and minimum of the magnetometer; in the dumbbell - the maximum of
+the acceleration, variance of the gyro and maximum and minimum of the magnetometer;
+and in the glove - the sum of the pitch and the maximum and minimum of the gyro.
+
+It was decided to likewise use a Random Forest algorithm, utilizing the R library 
+randomForest. If time permits an evaluation of other machine learning algorithms 
+will be performed for a comparison to the Random Forest approach.
+
+## Data Analysis
+A fairly detailed data analysis was initially begun on the training data. It soon 
+became apparent that there was quite a variability in the range of values obtained 
+over the same exercises when performed by different subjects. It seems likely that 
+these are due to differences in the sensors rather than the participants. There
+were a number of inconsistencies in the summary data names, with some summary 
+variables seeming to be collecting data from a sensor that did not tally with the 
+name of the summary variable. In addition there were quite a lot of invalid data 
+(NA and Div 0) in the summary fields.
+
+Many of the variables used by the original study are summary variables, or are 
+variables that can only be obtained in the context of a range of measurements in 
+a time window over a single session. However an examination of the test data 
+revealed that none of the summary variables contained valid data (they were all 
+NA), therefore it was concluded that we should remove these variables from both 
+the training and test data, and just proceed with variables that were in common 
+use by both data sets. Furthermore, as the test data consists of individual 
+unrelated records it seemed it would be more useful to concentrate on measurements 
+that can be simply compared to one another, where there is no dependence on 
+measuring averages or variance etc. from within a set of related records.
+
+## Data Preparation
+See Appendix A for the details of the data preparation performed in R code.
+
+The supplied training set was aligned with the available columns in the test set
+by removing columns in both sets that were all NA the test set. Additionally, apart
+from the identifying subject variable any columns that were not sensor measurements 
+were also removed. The training data was further split to give a test data set so
+evaluation of the model accuracy could be assessed.
+
+```{r echo=FALSE}
+suppressPackageStartupMessages({
+    library(caret)
+    library(randomForest)
+    library(ggplot2)
+    library(dplyr)
+})
+
+set.seed(1000)
+
+# read test data
+testdf0 <- read.csv("pml-testing.csv", header=TRUE)
+# subset to only include columns that are not all NAs
+testdf <- testdf0[, colSums(is.na(testdf0)) != nrow(testdf0)]
+# extract the columns names retained
+testcols <- colnames(testdf)
+# set up same column list for the training data, swapping test data specific 
+# problem_id column for training data specific classe (what we want to 
+# train on, and eventually predict)
+traincols <- gsub("problem_id", "classe", testcols)
+
+# read training data
+traindf0 <- read.csv("pml-training.csv", header=TRUE)
+# subset to get only the columns prepared above that we can usefully match on
+traindf1 <- traindf0[, traincols]
+# for a final training set exclude columns that are not measurements
+Colexcl <- c("X", "raw_timestamp_part_1", "raw_timestamp_part_2", 
+             "cvtd_timestamp", "new_window", "num_window")
+# create the training data frame
+traindf <- traindf1[,!names(traindf1) %in% Colexcl]
+    
+# partition the training data from into training and testing sets, so we 
+# can evaluate the model before applying to the supplied test data 
+inTrain = createDataPartition(traindf$classe, p = 0.6)[[1]]
+training = traindf[inTrain, ]
+testing = traindf[-inTrain, ]
+inTest = createDataPartition(testing$classe, p = 0.5)[[1]]
+# creating 2 test sets, in case required...
+testA = testing[inTest, ]
+testB = testing[-inTest, ]
+```
+## Deciding on a data model
+See Appendix B for the details of the model construction performed in R code.
+
+Create an initial model using Random Forest and specifying importance=TRUE so we 
+can evaluate the most important variables. The randomForest library implicitly
+performs cross validation as it assembles and examines a large collection of 
+decision trees by first generating a random sample of the original data with 
+replacement (bootstrapping), then selecting and testing variables at random to 
+determine node splitting. Multiple trees are constructed, and the usefulness of 
+each variable in each decision is noted. 
+```{r echo=FALSE}
+# 1. Model of all variables
+# If we have run this before, load the saved model from the RDS file
+if(file.exists("rfmodel.rds")) {
+    rf <- readRDS("rfmodel.rds")
+} else {
+    # Or, run the model and save it to an RDS file
+    rf<-randomForest(classe ~ ., data=training, keep.inbag = TRUE, importance=TRUE)
+    saveRDS(rf, file = "rfmodel.rds")
+}
+
+print(rf)
+```
+
+The resulting model is very accurate with an out-of-bag (OOB) estimate of error 
+rate of 0.69%, but this would most likely be over-fitting the data, and we can 
+remove many variables from our final model. Printing an Importance chart shows 
+around seven variables that are highly significant (the larger numbers in the 
+chart):
+
+```{r echo=FALSE, fig.width=7, fig.height=6}
+# Print the Importance plot of all variables
+varImpPlot(rf, type=2, main="Importance of variables", cex = 0.8, pch=19)
+```
+  
+To get an idea of why these variables might be important we chart distribution
+information of the most important dozen variables per classe. We can observe that 
+for each variable there are distinguishing features per classe, and very often one 
+classe in particular is significant per variable, in terms of the mean and range of 
+the variable. One can visualize the importance of these values in making decisions 
+about tree node construction (see Appendix C for the R code used to create this chart):
+```{r echo=FALSE, fig.width=10, fig.height=9}
+p1  <- ggplot(training, aes(x=classe, y=roll_belt, fill=classe)) + geom_boxplot() + guides(fill=FALSE)
+p2  <- ggplot(training, aes(x=classe, y=yaw_belt, fill=classe)) + geom_boxplot() + guides(fill=FALSE)
+p3  <- ggplot(training, aes(x=classe, y=pitch_forearm, fill=classe)) + geom_boxplot() + guides(fill=FALSE)
+p4  <- ggplot(training, aes(x=classe, y=magnet_dumbbell_z, fill=classe)) + geom_boxplot() + guides(fill=FALSE)
+p5  <- ggplot(training, aes(x=classe, y=pitch_belt, fill=classe)) + geom_boxplot() + guides(fill=FALSE)
+p6  <- ggplot(training, aes(x=classe, y=magnet_dumbbell_y, fill=classe)) + geom_boxplot() + guides(fill=FALSE)
+p7  <- ggplot(training, aes(x=classe, y=roll_forearm, fill=classe)) + geom_boxplot() + guides(fill=FALSE)
+p8  <- ggplot(training, aes(x=classe, y=magnet_dumbbell_x, fill=classe)) + geom_boxplot() + guides(fill=FALSE)
+p9  <- ggplot(training, aes(x=classe, y=accel_dumbbell_y, fill=classe)) + geom_boxplot() + guides(fill=FALSE)
+p10 <- ggplot(training, aes(x=classe, y=roll_dumbbell, fill=classe)) + geom_boxplot() + guides(fill=FALSE)
+p11 <- ggplot(training, aes(x=classe, y=magnet_belt_y, fill=classe)) + geom_boxplot() + guides(fill=FALSE)
+p12 <- ggplot(training, aes(x=classe, y=magnet_belt_z, fill=classe)) + geom_boxplot() + guides(fill=FALSE)
+
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+    library(grid)
+    plots <- c(list(...), plotlist)
+    numPlots = length(plots)
+    if (is.null(layout)) {
+        layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                         ncol = cols, nrow = ceiling(numPlots/cols))
+    }
+    if (numPlots==1) {
+        print(plots[[1]])
+    } else {
+        grid.newpage()
+        pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+        for (i in 1:numPlots) {
+            matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+            print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                            layout.pos.col = matchidx$col))
+        }
+    }
+}
+
+multiplot(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, 
+          layout=matrix(c(1,2,3,4,5,6,7,8,9,10,11,12), nrow=3, byrow=TRUE))
+
+```
+  
+As there are 7 most highly important variables, a final model using these is 
+constructed. However looking at the plots above it seems possible that the top 10 
+variables would aid in differentiating between classes, so a 10 variable model 
+is also constructed, and the two models are compared.
+```{r echo=FALSE}
+if(file.exists("rffinalmodel.rds")) {
+    rffinal <- readRDS("rffinalmodel.rds")
+} else {
+    rffinal <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm + 
+                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y + 
+                            roll_forearm 
+                          , data=training, importance=TRUE)
+    saveRDS(rffinal, file = "rffinalmodel.rds")
+}
+
+if(file.exists("rf10vmodel.rds")) {
+    rf10vfinal <- readRDS("rf10vmodel.rds")
+} else {
+    rf10vfinal <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm + 
+                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y + 
+                            roll_forearm + magnet_dumbbell_x + accel_dumbbell_y + 
+                            roll_dumbbell
+                          , data=training, importance=TRUE)
+    saveRDS(rf10vfinal, file = "rf10vmodel.rds")
+}
+
+```
+
+Final Model
+```{r echo=FALSE}
+print(rffinal)
+```
+
+Top 10 variables model
+```{r echo=FALSE}
+print(rf10vfinal)
+```
+
+Using 10 variables worsens the OOB accuracy by 0.03% over the 7 variable model, 
+so we confirm that the final model can use just the top 7 variables, delivering
+an accuracy of 98.23% (100 - the OOB error rate) over the training data. 
+
+## Testing and using the model prediction
+Using the test data we have put aside from our supplied training data, we apply 
+the model, and compare the predicted value delivered by the model against the 
+actual classe variable:
+```{r}
+testA$prediction <- predict(rffinal, testA)
+hitRows <- which(testA$prediction == testA$classe)
+missRows <- which(testA$prediction != testA$classe)
+predictaccuracy <- round((length(hitRows) / (length(hitRows) + length(missRows))) * 100, 2)
+```
+
+The accuracy of our final model when applied to the test data we created is 
+`r predictaccuracy`%, very close to the estimated accuracy of 98.23% . We can 
+now apply the model to the 20 test records in the supplied test data and make 
+predictions to supply to the evaluation process on the Coursera course site:
+```{r}
+predict(rffinal, testdf)
+```
+
+## Conclusion
+The predictions for the supplied test data were confirmed as accurate, so we can 
+say that the Random Forest approach is very suitable to modelling this kind of 
+problem. However it should be noted that analysis revealed that the supplied test 
+data were 20 individual records extracted from the supplied training data, and that
+a precise match on key values could be made between the test and training data.
+Theoretically then we could have "predicted" on this data using simple pattern 
+matching, and it's likely that the strength of the Random Forest approach is to
+find complex patterns in data like this. Appendix D contains an extract of the
+logic employed by Random Forest in terms of R code if/else logic, and a dendrogram 
+chart that illustrates the coverage and complexity of the Random Forest approach.
+
+
+## Appendix A - Data Preparation
+Assumes the supplied test and training data CSV files are available in the working
+directory. Load the test and training data into R; assess the test data for all 
+useful columns; if all of the data in any columns are entirely NA, then eliminate 
+these from both the test and training data. Then remove any columns that are not 
+either measurements or the classe or subject identifier. 
+```{r eval=FALSE}
+suppressPackageStartupMessages({
+    library(caret)
+    library(randomForest)
+    library(ggplot2)
+    library(dplyr)
+    library(grid)
+})
+
+set.seed(1000)
+
+# read test data
+testdf0 <- read.csv("pml-testing.csv", header=TRUE)
+# subset to only include columns that are not all NAs
+testdf <- testdf0[, colSums(is.na(testdf0)) != nrow(testdf0)]
+# extract the columns names retained
+testcols <- colnames(testdf)
+# set up same column list for the training data, swapping test data specific 
+# problem_id column for training data specific classe (what we want to 
+# train on, and eventually predict)
+traincols <- gsub("problem_id", "classe", testcols)
+
+# read training data
+traindf0 <- read.csv("pml-training.csv", header=TRUE)
+# subset to get only the columns prepared above that we can usefully match on
+traindf1 <- traindf0[, traincols]
+# for a final training set exclude columns that are not measurements
+Colexcl <- c("X", "raw_timestamp_part_1", "raw_timestamp_part_2", 
+             "cvtd_timestamp", "new_window", "num_window")
+# create the training data frame
+traindf <- traindf1[,!names(traindf1) %in% Colexcl]
+    
+# partition the training data from into training and testing sets, so we 
+# can evaluate the model before applying to the supplied test data 
+inTrain = createDataPartition(traindf$classe, p = 0.6)[[1]]
+training = traindf[inTrain, ]
+testing = traindf[-inTrain, ]
+inTest = createDataPartition(testing$classe, p = 0.5)[[1]]
+# creating 2 test sets, in case required...
+testA = testing[inTest, ]
+testB = testing[-inTest, ]
+```
+
+## Appendix B - Creation of initial and final models
+```{r eval=FALSE}
+
+# 1. Model of all variables
+# If we have run this before, load the saved model from the RDS file
+if(file.exists("rfmodel.rds")) {
+    rf <- readRDS("rfmodel.rds")
+} else {
+    # Or, run the model and save it to an RDS file
+    rf<-randomForest(classe ~ ., data=training, keep.inbag = TRUE, importance=TRUE)
+    saveRDS(rf, file = "rfmodel.rds")
+}
+
+# 2. Model using top 10 variables 
+if(file.exists("rf10vmodel.rds")) {
+    rf10vfinal <- readRDS("rf10vmodel.rds")
+} else {
+    rf10vfinal <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm + 
+                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y + 
+                            roll_forearm + magnet_dumbbell_x + accel_dumbbell_y + 
+                            roll_dumbbell
+                          , data=training, importance=TRUE)
+    saveRDS(rf10vfinal, file = "rf10vmodel.rds")
+}
+
+# 3. Final model using top 7 variables 
+if(file.exists("rffinalmodel.rds")) {
+    rffinal <- readRDS("rffinalmodel.rds")
+} else {
+    rffinal <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm + 
+                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y + 
+                            roll_forearm 
+                          , data=training, importance=TRUE)
+    saveRDS(rffinal, file = "rffinalmodel.rds")
+}
+```
+
+## Appendix C - Creation of box plots of variables per classe
+```{r eval=FALSE}
+p1  <- ggplot(training, aes(x=classe, y=roll_belt, fill=classe)) + 
+        geom_boxplot() + guides(fill=FALSE)
+p2  <- ggplot(training, aes(x=classe, y=yaw_belt, fill=classe)) + 
+        geom_boxplot() + guides(fill=FALSE)
+p3  <- ggplot(training, aes(x=classe, y=pitch_forearm, fill=classe)) + 
+        geom_boxplot() + guides(fill=FALSE)
+p4  <- ggplot(training, aes(x=classe, y=magnet_dumbbell_z, fill=classe)) + 
+        geom_boxplot() + guides(fill=FALSE)
+p5  <- ggplot(training, aes(x=classe, y=pitch_belt, fill=classe)) + 
+        geom_boxplot() + guides(fill=FALSE)
+p6  <- ggplot(training, aes(x=classe, y=magnet_dumbbell_y, fill=classe)) + 
+        geom_boxplot() + guides(fill=FALSE)
+p7  <- ggplot(training, aes(x=classe, y=roll_forearm, fill=classe)) + 
+        geom_boxplot() + guides(fill=FALSE)
+p8  <- ggplot(training, aes(x=classe, y=magnet_dumbbell_x, fill=classe)) + 
+        geom_boxplot() + guides(fill=FALSE)
+p9  <- ggplot(training, aes(x=classe, y=accel_dumbbell_y, fill=classe)) + 
+        geom_boxplot() + guides(fill=FALSE)
+p10 <- ggplot(training, aes(x=classe, y=roll_dumbbell, fill=classe)) + 
+        geom_boxplot() + guides(fill=FALSE)
+p11 <- ggplot(training, aes(x=classe, y=magnet_belt_y, fill=classe)) + 
+        geom_boxplot() + guides(fill=FALSE)
+p12 <- ggplot(training, aes(x=classe, y=magnet_belt_z, fill=classe)) + 
+        geom_boxplot() + guides(fill=FALSE)
+
+# courtesy: http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+    library(grid)
+    plots <- c(list(...), plotlist)
+    numPlots = length(plots)
+    if (is.null(layout)) {
+        layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                         ncol = cols, nrow = ceiling(numPlots/cols))
+    }
+    if (numPlots==1) {
+        print(plots[[1]])
+    } else {
+        grid.newpage()
+        pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+        for (i in 1:numPlots) {
+            matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+            print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                            layout.pos.col = matchidx$col))
+        }
+    }
+}
+
+multiplot(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, 
+          layout=matrix(c(1,2,3,4,5,6,7,8,9,10,11,12), nrow=3, byrow=TRUE))
+
+```
+
+
+## Appendix D - examples of the Random Forest tree construction
+These examples are of illustrative purpose only, the complex "black box" approach
+taken by Random Forest does not lend itself to any useful analysis of these kinds
+of tables and charts.
+
+Extract of the first 48 decisions of the first Random Forest tree
+```{r}
+suppressPackageStartupMessages({
+    library(rattle)
+})    
+head(treeset.randomForest(rffinal, n=1, root=1, format="R"), 48)
+```
+
+Dendrogram of the first Random Forest tree
+```{r fig.width=10, fig.height=8}
+# http://stats.stackexchange.com/questions/2344/best-way-to-present-a-random-forest-in-a-publication
+to.dendrogram <- function(dfrep,rownum=1,height.increment=0.1){
+    
+    if(dfrep[rownum,'status'] == -1){
+        rval <- list()
+        
+        attr(rval,"members") <- 1
+        attr(rval,"height") <- 0.0
+        attr(rval,"label") <- dfrep[rownum,'prediction']
+        attr(rval,"leaf") <- TRUE
+        
+    }else{##note the change "to.dendrogram" and not "to.dendogram"
+        left <- to.dendrogram(dfrep,dfrep[rownum,'left daughter'],height.increment)
+        right <- to.dendrogram(dfrep,dfrep[rownum,'right daughter'],height.increment)
+        rval <- list(left,right)
+        
+        attr(rval,"members") <- attr(left,"members") + attr(right,"members")
+        attr(rval,"height") <- max(attr(left,"height"),attr(right,"height")) + height.increment
+        attr(rval,"leaf") <- FALSE
+        attr(rval,"edgetext") <- dfrep[rownum,'split var']
+    }
+   
+    class(rval) <- "dendrogram"
+    
+    return(rval)
+}   
+
+if(file.exists("rffinaltree.rds")) {
+    tree <- readRDS("rffinaltree.rds")
+} else {
+    tree <- getTree(rffinal,1,labelVar=TRUE)
+    saveRDS(tree, file = "rffinaltree.rds")
+}
+
+tree <- getTree(rffinal,1,labelVar=TRUE)
+d <- to.dendrogram(tree)
+plot(d,center=TRUE,leaflab='none',edgePar=list(t.cex=0.7,p.col=NA,p.lty=0))
+```
