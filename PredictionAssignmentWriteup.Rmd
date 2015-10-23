@@ -6,96 +6,96 @@ output: html_document
 ---
 
 ## Introduction
-The following is a course project as part of the Coursera Data Science course run 
-by John Hopkins Bloomberg School of Public Health. The purpose of the project 
+The following is a course project as part of the Coursera Data Science course run
+by John Hopkins Bloomberg School of Public Health. The purpose of the project
 is to demonstrate understanding of how to use machine learning for prediction.
 
-The goal of the project is to "use data from accelerometers on the belt, forearm, 
-arm, and dumbbell of 6 participants" to predict the manner in which participants 
-carried out a weight lifting exercise. This follows closely the goal of the original 
-study, which was to use sensors to understand how correctly participants were 
-performing a weight lifting exercise. Data from the study was generously made 
-available to Coursera by the authors: 
-Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. 
-Qualitative Activity Recognition of Weight Lifting Exercises. 
-Proceedings of 4th International Conference in Cooperation with SIGCHI 
-(Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013. 
+The goal of the project is to "use data from accelerometers on the belt, forearm,
+arm, and dumbbell of 6 participants" to predict the manner in which participants
+carried out a weight lifting exercise. This follows closely the goal of the original
+study, which was to use sensors to understand how correctly participants were
+performing a weight lifting exercise. Data from the study was generously made
+available to Coursera by the authors:
+Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H.
+Qualitative Activity Recognition of Weight Lifting Exercises.
+Proceedings of 4th International Conference in Cooperation with SIGCHI
+(Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013.
 http://groupware.les.inf.puc-rio.br
 
-Data was collected from sensors attached to the arm, belt, glove, and dumbbell 
-while six young health participants were asked to perform one set of 10 repetitions 
-of the Unilateral Dumbbell Biceps Curl in five different ways: 
+Data was collected from sensors attached to the arm, belt, glove, and dumbbell
+while six young health participants were asked to perform one set of 10 repetitions
+of the Unilateral Dumbbell Biceps Curl in five different ways:
 
-- Class A - Exactly according to specification. 
-- Class B - Throwing the Elbow to the front. 
-- Class C - Lifting the Dumbbell only halfway. 
-- Class D - Lowering the Dumbbell only halfway. 
+- Class A - Exactly according to specification.
+- Class B - Throwing the Elbow to the front.
+- Class C - Lifting the Dumbbell only halfway.
+- Class D - Lowering the Dumbbell only halfway.
 - Class E - Throwing the Hips to the front.
 
-Class A corresponds to the specified correct execution of the exercise, while the 
-other 4 classes correspond to common mistakes. The training data variable identifying 
-each of the 5 exercise classes is named **"classe"** and is the value we need to 
+Class A corresponds to the specified correct execution of the exercise, while the
+other 4 classes correspond to common mistakes. The training data variable identifying
+each of the 5 exercise classes is named **"classe"** and is the value we need to
 predict.
 
-The sensors consisted of integrated accelerometers, magnetometers, and gyroscopes. 
-Although the Coursera assignment refers to the sensor as an accelerometer only, 
-I have interpreted this as a generic label for the integrated sensor, especially 
-in light of the further statement in the assignment to "use any of the other variables 
-to predict with" (i.e. apart from classe which we are trying to predict). 
+The sensors consisted of integrated accelerometers, magnetometers, and gyroscopes.
+Although the Coursera assignment refers to the sensor as an accelerometer only,
+this has been interpreted this as a generic label for the integrated sensor, especially
+in light of the further statement in the assignment to "use any of the other variables
+to predict with" (i.e. apart from classe which we are trying to predict).
 
-The data was supplied to Coursera students in the form of two CSV files, a set of 
-training data consisting of 19622 records of 160 variables, and a set of 20 
-records of test data also consisting of 160 variables: The training data has the 
-*classe* variable, while the other variables consist of measurements from the 
-sensors; plus some calculated summary variables such as totals, averages, 
-variants and standard deviations; and fields identifying the participant and the 
+The data was supplied to Coursera students in the form of two CSV files, a set of
+training data consisting of 19622 records of 160 variables, and a set of 20
+records of test data also consisting of 160 variables: The training data has the
+*classe* variable, while the other variables consist of measurements from the
+sensors; plus some calculated summary variables such as totals, averages,
+variants and standard deviations; and fields identifying the participant and the
 exercise session. The test data had "problem_id" field numbered 1 to 20 instead
 of classe.
 
-The training data for this project are available here: 
+The training data for this project are available here:
 
 https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv
 
-The test data are available here: 
+The test data are available here:
 
 https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
 
-According to the [study documentation](http://groupware.les.inf.puc-rio.br/public/papers/2013.Velloso.QAR-WLE.pdf), 
-sessions were measured in over a number of seconds, with 2.5 seconds being the optimum 
-"window" of measurements for accurate measurement. During this time many signals 
-are collected and accumulated in a series of records, the last record in a set 
+According to the [study documentation](http://groupware.les.inf.puc-rio.br/public/papers/2013.Velloso.QAR-WLE.pdf),
+sessions were measured in over a number of seconds, with 2.5 seconds being the optimum
+"window" of measurements for accurate measurement. During this time many signals
+are collected and accumulated in a series of records, the last record in a set
 receives the summary measures briefly described above. For the study the authors
-used a Random Forest machine learning algorithm, and identified 17 important 
-variables to use: In the belt - the mean and variance of the roll, maximum, range 
-and variance of the accelerometer vector, variance of the gyro and variance of 
+used a Random Forest machine learning algorithm, and identified 17 important
+variables to use: In the belt - the mean and variance of the roll, maximum, range
+and variance of the accelerometer vector, variance of the gyro and variance of
 the magnetometer; in the arm - the variance of the accelerometer vector and the
 maximum and minimum of the magnetometer; in the dumbbell - the maximum of
 the acceleration, variance of the gyro and maximum and minimum of the magnetometer;
 and in the glove - the sum of the pitch and the maximum and minimum of the gyro.
 
-It was decided to likewise use a Random Forest algorithm, utilizing the R library 
-randomForest. If time permits an evaluation of other machine learning algorithms 
+It was decided to likewise use a Random Forest algorithm, utilizing the R library
+randomForest. If time permits an evaluation of other machine learning algorithms
 will be performed for a comparison to the Random Forest approach.
 
 ## Data Analysis
-A fairly detailed data analysis was initially begun on the training data. It soon 
-became apparent that there was quite a variability in the range of values obtained 
-over the same exercises when performed by different subjects. It seems likely that 
+A fairly detailed data analysis was initially begun on the training data. It soon
+became apparent that there was quite a variability in the range of values obtained
+over the same exercises when performed by different subjects. It seems likely that
 these are due to differences in the sensors rather than the participants. There
-were a number of inconsistencies in the summary data names, with some summary 
-variables seeming to be collecting data from a sensor that did not tally with the 
-name of the summary variable. In addition there were quite a lot of invalid data 
+were a number of inconsistencies in the summary data names, with some summary
+variables seeming to be collecting data from a sensor that did not tally with the
+name of the summary variable. In addition there were quite a lot of invalid data
 (NA and Div 0) in the summary fields.
 
-Many of the variables used by the original study are summary variables, or are 
-variables that can only be obtained in the context of a range of measurements in 
-a time window over a single session. However an examination of the test data 
-revealed that none of the summary variables contained valid data (they were all 
-NA), therefore it was concluded that we should remove these variables from both 
-the training and test data, and just proceed with variables that were in common 
-use by both data sets. Furthermore, as the test data consists of individual 
-unrelated records it seemed it would be more useful to concentrate on measurements 
-that can be simply compared to one another, where there is no dependence on 
+Many of the variables used by the original study are summary variables, or are
+variables that can only be obtained in the context of a range of measurements in
+a time window over a single session. However an examination of the test data
+revealed that none of the summary variables contained valid data (they were all
+NA), therefore it was concluded that we should remove these variables from both
+the training and test data, and just proceed with variables that were in common
+use by both data sets. Furthermore, as the test data consists of individual
+unrelated records it seemed it would be more useful to concentrate on measurements
+that can be simply compared to one another, where there is no dependence on
 measuring averages or variance etc. from within a set of related records.
 
 ## Data Preparation
@@ -103,7 +103,7 @@ See Appendix A for the details of the data preparation performed in R code.
 
 The supplied training set was aligned with the available columns in the test set
 by removing columns in both sets that were all NA the test set. Additionally, apart
-from the identifying subject variable any columns that were not sensor measurements 
+from the identifying subject variable any columns that were not sensor measurements
 were also removed. The training data was further split to give a test data set so
 evaluation of the model accuracy could be assessed.
 
@@ -113,6 +113,9 @@ suppressPackageStartupMessages({
     library(randomForest)
     library(ggplot2)
     library(dplyr)
+    library(reshape2)
+    library(knitr)
+    library(grid)
 })
 
 set.seed(1000)
@@ -123,8 +126,8 @@ testdf0 <- read.csv("pml-testing.csv", header=TRUE)
 testdf <- testdf0[, colSums(is.na(testdf0)) != nrow(testdf0)]
 # extract the columns names retained
 testcols <- colnames(testdf)
-# set up same column list for the training data, swapping test data specific 
-# problem_id column for training data specific classe (what we want to 
+# set up same column list for the training data, swapping test data specific
+# problem_id column for training data specific classe (what we want to
 # train on, and eventually predict)
 traincols <- gsub("problem_id", "classe", testcols)
 
@@ -133,13 +136,13 @@ traindf0 <- read.csv("pml-training.csv", header=TRUE)
 # subset to get only the columns prepared above that we can usefully match on
 traindf1 <- traindf0[, traincols]
 # for a final training set exclude columns that are not measurements
-Colexcl <- c("X", "raw_timestamp_part_1", "raw_timestamp_part_2", 
+Colexcl <- c("X", "raw_timestamp_part_1", "raw_timestamp_part_2",
              "cvtd_timestamp", "new_window", "num_window")
 # create the training data frame
 traindf <- traindf1[,!names(traindf1) %in% Colexcl]
-    
-# partition the training data from into training and testing sets, so we 
-# can evaluate the model before applying to the supplied test data 
+
+# partition the training data from into training and testing sets, so we
+# can evaluate the model before applying to the supplied test data
 inTrain = createDataPartition(traindf$classe, p = 0.6)[[1]]
 training = traindf[inTrain, ]
 testing = traindf[-inTrain, ]
@@ -151,13 +154,13 @@ testB = testing[-inTest, ]
 ## Deciding on a data model
 See Appendix B for the details of the model construction performed in R code.
 
-Create an initial model using Random Forest and specifying importance=TRUE so we 
+Create an initial model using Random Forest and specifying importance=TRUE so we
 can evaluate the most important variables. The randomForest library implicitly
-performs cross validation as it assembles and examines a large collection of 
-decision trees by first generating a random sample of the original data with 
-replacement (bootstrapping), then selecting and testing variables at random to 
-determine node splitting. Multiple trees are constructed, and the usefulness of 
-each variable in each decision is noted. 
+performs cross validation as it assembles and examines a large collection of
+decision trees by first generating a random sample of the original data with
+replacement (bootstrapping), then selecting and testing variables at random to
+determine node splitting. Multiple trees are constructed, and the usefulness of
+each variable in each decision is noted.
 ```{r echo=FALSE}
 # 1. Model of all variables
 # If we have run this before, load the saved model from the RDS file
@@ -168,27 +171,58 @@ if(file.exists("rfmodel.rds")) {
     rf<-randomForest(classe ~ ., data=training, keep.inbag = TRUE, importance=TRUE)
     saveRDS(rf, file = "rfmodel.rds")
 }
-
+```
+```{r}
 print(rf)
 ```
 
-The resulting model is very accurate with an out-of-bag (OOB) estimate of error 
-rate of 0.69%, but this would most likely be over-fitting the data, and we can 
-remove many variables from our final model. Printing an Importance chart shows 
-around seven variables that are highly significant (the larger numbers in the 
-chart):
+### Error Analysis
+See Appendix C for detailed discussion of error analysis and "out-of-bag" (OOB)
+error rates. 
+
+We have relied on the Random Forest process for cross-validation, as discussed
+in Appendix C. Random Forest estimates errors as an out-of-bag error rate, and
+the designers of the process have concluded that OOB has proven to be unbiased 
+in many tests, with very close alignment between estimated and actual error rates.
+
+In Appendix C we examine the error rates and conclude that we could safely 
+reduce our trees from 500 to 192 without losing too much precision. Creating a 
+Random Forest of 192 trees over all the variables reduces the size of it from 
+48.4 Mb to 20.2 Mb, but increases OOB error by only 0.07%: 
+
+```{r echo=FALSE}
+if(file.exists("rfmodel192.rds")) {
+    rf192 <- readRDS("rfmodel192.rds")
+} else {
+    # Or, run the model and save it to an RDS file
+    rf192 <- randomForest(classe ~ ., data=training, keep.inbag = TRUE, importance=TRUE, ntree=192)
+    saveRDS(rf192, file = "rfmodel192.rds")
+}
+```
+```{r}
+print(rf192)
+```
+The resulting model is very accurate with an out-of-bag (OOB) estimate of error
+rate of 0.72%, but using all of the variables may not be neccessary, we could 
+decide to retain variables based on their importance...  
+
+### Variables Importance
+See Appendix D for detail of the Importance analysis performed on various models.
+
+Printing an Importance chart shows around seven variables that are highly significant 
+(the larger numbers in the chart), plus an additional 10 that might be:
 
 ```{r echo=FALSE, fig.width=7, fig.height=6}
 # Print the Importance plot of all variables
-varImpPlot(rf, type=2, main="Importance of variables", cex = 0.8, pch=19)
+varImpPlot(rf192, type=2, main="Importance of variables", cex = 0.8, pch=19)
 ```
-  
+
 To get an idea of why these variables might be important we chart distribution
-information of the most important dozen variables per classe. We can observe that 
-for each variable there are distinguishing features per classe, and very often one 
-classe in particular is significant per variable, in terms of the mean and range of 
-the variable. One can visualize the importance of these values in making decisions 
-about tree node construction (see Appendix C for the R code used to create this chart):
+information of the most important dozen variables per class. We can observe that
+for each variable there are distinguishing features per class, and very often one
+class in particular is significant per variable, in terms of the mean and range of
+the variable. One can visualize the importance of these values in making decisions
+about tree node construction (see Appendix E for the R code used to create this chart):
 ```{r echo=FALSE, fig.width=10, fig.height=9}
 p1  <- ggplot(training, aes(x=classe, y=roll_belt, fill=classe)) + geom_boxplot() + guides(fill=FALSE)
 p2  <- ggplot(training, aes(x=classe, y=yaw_belt, fill=classe)) + geom_boxplot() + guides(fill=FALSE)
@@ -204,7 +238,6 @@ p11 <- ggplot(training, aes(x=classe, y=magnet_belt_y, fill=classe)) + geom_boxp
 p12 <- ggplot(training, aes(x=classe, y=magnet_belt_z, fill=classe)) + geom_boxplot() + guides(fill=FALSE)
 
 multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
-    library(grid)
     plots <- c(list(...), plotlist)
     numPlots = length(plots)
     if (is.null(layout)) {
@@ -224,97 +257,129 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
     }
 }
 
-multiplot(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, 
+multiplot(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12,
           layout=matrix(c(1,2,3,4,5,6,7,8,9,10,11,12), nrow=3, byrow=TRUE))
 
 ```
-  
-As there are 7 most highly important variables, a final model using these is 
-constructed. However looking at the plots above it seems possible that the top 10 
-variables would aid in differentiating between classes, so a 10 variable model 
-is also constructed, and the two models are compared.
+
+As there are 7 most highly important variables, a model using these is constructed. 
+However looking at the plots above and the Importance chart it seems possible that 
+the top 17 variables would aid in differentiating between classes, so a 17 variable 
+model is also constructed. 
+
+Additionally, as we are reducing our variables we may find it better to increase
+our trees back from 192 to 500 - to gain more accuracy, so we also construct 7 and
+17 variable models with the default 500 trees. 
+
+The final model we choose consists of 17 variables and 500 trees, based on having 
+the best OOB error rate (see appendix D).
+
 ```{r echo=FALSE}
-if(file.exists("rffinalmodel.rds")) {
-    rffinal <- readRDS("rffinalmodel.rds")
+if(file.exists("rf7model.rds")) {
+    rf7final <- readRDS("rf7model.rds")
 } else {
-    rffinal <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm + 
-                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y + 
+    rf7final <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm +
+                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y +
                             roll_forearm 
                           , data=training, importance=TRUE)
-    saveRDS(rffinal, file = "rffinalmodel.rds")
+    saveRDS(rf7final, file = "rf7model.rds")
 }
 
-if(file.exists("rf10vmodel.rds")) {
-    rf10vfinal <- readRDS("rf10vmodel.rds")
+if(file.exists("rf7.192model.rds")) {
+    rf7.192final <- readRDS("rf7.192model.rds")
 } else {
-    rf10vfinal <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm + 
-                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y + 
-                            roll_forearm + magnet_dumbbell_x + accel_dumbbell_y + 
-                            roll_dumbbell
+    rf7.192final <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm +
+                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y +
+                            roll_forearm 
+                          , data=training, importance=TRUE, ntree=192)
+    saveRDS(rf7.192final, file = "rf7.192model.rds")
+}
+
+if(file.exists("rf17model.rds")) {
+    rf17final <- readRDS("rf17model.rds")
+} else {
+    rf17final <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm +
+                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y +
+                            roll_forearm + magnet_dumbbell_x + accel_dumbbell_y +
+                            roll_dumbbell + accel_dumbbell_y + accel_belt_z +
+                            magnet_belt_z + accel_forearm_x  + accel_dumbbell_z +
+                            roll_arm    
                           , data=training, importance=TRUE)
-    saveRDS(rf10vfinal, file = "rf10vmodel.rds")
+    saveRDS(rf17final, file = "rf17model.rds")
+}
+
+if(file.exists("rf17.192model.rds")) {
+    rf17.192final <- readRDS("rf17.192model.rds")
+} else {
+    rf17.192final <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm +
+                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y +
+                            roll_forearm + magnet_dumbbell_x + accel_dumbbell_y +
+                            roll_dumbbell + accel_dumbbell_y + accel_belt_z +
+                            magnet_belt_z + accel_forearm_x  + accel_dumbbell_z +
+                            roll_arm    
+                          , data=training, importance=TRUE, ntree=192)
+    saveRDS(rf17.192final, file = "rf17.192model.rds")
 }
 
 ```
 
-Final Model
-```{r echo=FALSE}
-print(rffinal)
+```{r}
+print(rf17final)
 ```
 
-Top 10 variables model
-```{r echo=FALSE}
-print(rf10vfinal)
-```
-
-Using 10 variables worsens the OOB accuracy by 0.03% over the 7 variable model, 
-so we confirm that the final model can use just the top 7 variables, delivering
-an accuracy of 98.23% (100 - the OOB error rate) over the training data. 
+Using 17 variables increases the OOB error by only 1.07% over the all-variables 
+model, so we conclude that the final model can use just the top 17 variables, 
+delivering an estimated accuracy of 98.79% (100 - the 1.21 OOB error rate) over 
+the training data.
 
 ## Testing and using the model prediction
-Using the test data we have put aside from our supplied training data, we apply 
-the model, and compare the predicted value delivered by the model against the 
+Using the test data we have put aside from our supplied training data, we apply
+the model, and compare the predicted value delivered by the model against the
 actual classe variable:
 ```{r}
-testA$prediction <- predict(rffinal, testA)
+testA$prediction <- predict(rf17final, testA)
 hitRows <- which(testA$prediction == testA$classe)
 missRows <- which(testA$prediction != testA$classe)
 predictaccuracy <- round((length(hitRows) / (length(hitRows) + length(missRows))) * 100, 2)
 ```
 
-The accuracy of our final model when applied to the test data we created is 
-`r predictaccuracy`%, very close to the estimated accuracy of 98.23% . We can 
-now apply the model to the 20 test records in the supplied test data and make 
-predictions to supply to the evaluation process on the Coursera course site:
-```{r}
-predict(rffinal, testdf)
+The accuracy of our final model when applied to the test data we created is
+`r predictaccuracy`%, very close to the estimated accuracy of 98.79% . We can
+now apply the model to the 20 test records in the supplied test data and make
+predictions to supply to the evaluation process on the Coursera course site.
+The predicted classes are not posted here, but upon posting there was a 100%
+success in prediction.
+```{r echo=FALSE, eval=FALSE}
+predict(rf17final, testdf)
 ```
 
 ## Conclusion
-The predictions for the supplied test data were confirmed as accurate, so we can 
-say that the Random Forest approach is very suitable to modelling this kind of 
-problem. However it should be noted that analysis revealed that the supplied test 
+The predictions for the supplied test data were confirmed as accurate, so we can
+say that the Random Forest approach is very suitable to modelling this kind of
+problem. However it should be noted that analysis revealed that the supplied test
 data were 20 individual records extracted from the supplied training data, and that
 a precise match on key values could be made between the test and training data.
-Theoretically then we could have "predicted" on this data using simple pattern 
+Theoretically then we could have "predicted" on this data using simple pattern
 matching, and it's likely that the strength of the Random Forest approach is to
-find complex patterns in data like this. Appendix D contains an extract of the
-logic employed by Random Forest in terms of R code if/else logic, and a dendrogram 
+find complex patterns in data like this. Appendix F contains an extract of the
+logic employed by Random Forest in terms of R code if/else logic, and a dendrogram
 chart that illustrates the coverage and complexity of the Random Forest approach.
 
 
 ## Appendix A - Data Preparation
 Assumes the supplied test and training data CSV files are available in the working
-directory. Load the test and training data into R; assess the test data for all 
-useful columns; if all of the data in any columns are entirely NA, then eliminate 
-these from both the test and training data. Then remove any columns that are not 
-either measurements or the classe or subject identifier. 
+directory. Load the test and training data into R; assess the test data for all
+useful columns; if all of the data in any columns are entirely NA, then eliminate
+these from both the test and training data. Then remove any columns that are not
+either measurements or the classe or subject identifier.
 ```{r eval=FALSE}
 suppressPackageStartupMessages({
     library(caret)
     library(randomForest)
     library(ggplot2)
     library(dplyr)
+    library(reshape2)
+    library(knitr)
     library(grid)
 })
 
@@ -326,8 +391,8 @@ testdf0 <- read.csv("pml-testing.csv", header=TRUE)
 testdf <- testdf0[, colSums(is.na(testdf0)) != nrow(testdf0)]
 # extract the columns names retained
 testcols <- colnames(testdf)
-# set up same column list for the training data, swapping test data specific 
-# problem_id column for training data specific classe (what we want to 
+# set up same column list for the training data, swapping test data specific
+# problem_id column for training data specific classe (what we want to
 # train on, and eventually predict)
 traincols <- gsub("problem_id", "classe", testcols)
 
@@ -336,13 +401,13 @@ traindf0 <- read.csv("pml-training.csv", header=TRUE)
 # subset to get only the columns prepared above that we can usefully match on
 traindf1 <- traindf0[, traincols]
 # for a final training set exclude columns that are not measurements
-Colexcl <- c("X", "raw_timestamp_part_1", "raw_timestamp_part_2", 
+Colexcl <- c("X", "raw_timestamp_part_1", "raw_timestamp_part_2",
              "cvtd_timestamp", "new_window", "num_window")
 # create the training data frame
 traindf <- traindf1[,!names(traindf1) %in% Colexcl]
-    
-# partition the training data from into training and testing sets, so we 
-# can evaluate the model before applying to the supplied test data 
+
+# partition the training data from into training and testing sets, so we
+# can evaluate the model before applying to the supplied test data
 inTrain = createDataPartition(traindf$classe, p = 0.6)[[1]]
 training = traindf[inTrain, ]
 testing = traindf[-inTrain, ]
@@ -365,55 +430,205 @@ if(file.exists("rfmodel.rds")) {
     saveRDS(rf, file = "rfmodel.rds")
 }
 
-# 2. Model using top 10 variables 
-if(file.exists("rf10vmodel.rds")) {
-    rf10vfinal <- readRDS("rf10vmodel.rds")
+# 2. Model using 192 trees
+if(file.exists("rfmodel192.rds")) {
+    rf192 <- readRDS("rfmodel192.rds")
 } else {
-    rf10vfinal <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm + 
-                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y + 
-                            roll_forearm + magnet_dumbbell_x + accel_dumbbell_y + 
-                            roll_dumbbell
-                          , data=training, importance=TRUE)
-    saveRDS(rf10vfinal, file = "rf10vmodel.rds")
+    # Or, run the model and save it to an RDS file
+    rf192 <- randomForest(classe ~ ., data=training, keep.inbag = TRUE, importance=TRUE, ntree=192)
+    saveRDS(rf192, file = "rfmodel192.rds")
 }
 
-# 3. Final model using top 7 variables 
-if(file.exists("rffinalmodel.rds")) {
-    rffinal <- readRDS("rffinalmodel.rds")
+# 3. Model using top 7 variables
+if(file.exists("rf7model.rds")) {
+    rf7final <- readRDS("rf7model.rds")
 } else {
-    rffinal <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm + 
-                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y + 
+    rf7final <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm +
+                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y +
                             roll_forearm 
                           , data=training, importance=TRUE)
-    saveRDS(rffinal, file = "rffinalmodel.rds")
+    saveRDS(rf7final, file = "rf7model.rds")
 }
+
+# 4. Model using top 7 variables and 192 trees
+if(file.exists("rf7.192model.rds")) {
+    rf7.192final <- readRDS("rf7.192model.rds")
+} else {
+    rf7.192final <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm +
+                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y +
+                            roll_forearm 
+                          , data=training, importance=TRUE, ntree=192)
+    saveRDS(rf7.192final, file = "rf7.192model.rds")
+}
+
+# 5. Model using top 17 variables
+if(file.exists("rf17model.rds")) {
+    rf17final <- readRDS("rf17model.rds")
+} else {
+    rf17final <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm +
+                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y +
+                            roll_forearm + magnet_dumbbell_x + accel_dumbbell_y +
+                            roll_dumbbell + accel_dumbbell_y + accel_belt_z +
+                            magnet_belt_z + accel_forearm_x  + accel_dumbbell_z +
+                            roll_arm    
+                          , data=training, importance=TRUE)
+    saveRDS(rf17final, file = "rf17model.rds")
+}
+
+# 6. Model using top 7 variables and 192 trees
+if(file.exists("rf17.192model.rds")) {
+    rf17.192final <- readRDS("rf17.192model.rds")
+} else {
+    rf17.192final <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm +
+                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y +
+                            roll_forearm + magnet_dumbbell_x + accel_dumbbell_y +
+                            roll_dumbbell + accel_dumbbell_y + accel_belt_z +
+                            magnet_belt_z + accel_forearm_x  + accel_dumbbell_z +
+                            roll_arm    
+                          , data=training, importance=TRUE, ntree=192)
+    saveRDS(rf17.192final, file = "rf17.192model.rds")
+}
+
 ```
 
-## Appendix C - Creation of box plots of variables per classe
+## Appendix C - Detailed discussion of Error rates
+
+Error rates are described by the Random Forest model in terms of Out-of-Bag (OOB) errors.
+The following is a [description of the OOB error estimate](https://www.stat.berkeley.edu/~breiman/RandomForests/cc_home.htm#ooberr)
+by the creators of the Random Forest process:
+
+*In random forests, there is **no need for cross-validation or a separate test set**
+to get an unbiased estimate of the test set error. It is estimated internally,
+during the run, as follows:*
+
+*Each tree is constructed using a different bootstrap sample from the original data.
+About one-third of the cases are left out of the bootstrap sample and not used in
+the construction of the kth tree.*
+
+*Put each case left out in the construction of the kth tree down the kth tree to
+get a classification. In this way, a test set classification is obtained for each
+case in about one-third of the trees. At the end of the run, take j to be the
+class that got most of the votes every time case n was oob. The proportion of
+times that j is not equal to the true class of n averaged over all cases is the
+**oob error estimate**. This has proven to be **unbiased in many tests**.*
+
+OOB error rate is the average of the individual errors of each class, which can
+be seen on the confusion matrix.
+
+On order to illustrate this we have added a column "Calculated error rates" to the
+confusion matrix produced below, which shows how each class.error value is
+obtained by taking the predictions not in the class (i.e. "out of bag"") and dividing
+by all of the instances of the class (i.e. all numbers in the current row).
+
+By then taking all of the errors divided by all of the possible numbers, we
+arrive at the OOB estimate of the error rate.
+
+```{r}
+##         OOB estimate of  error rate: 0.69%
+## Confusion matrix:
+##      A    B    C    D    E class.error  [ Calculated error rates       ]
+## A 3344    3    0    0    1 0.001194743  [ (3+0+0+1)  / (3344+3+0+0+1)  ]
+## B   12 2260    7    0    0 0.008336990  [ (12+7+0+0) / (12+2260+7+0+0) ]
+## C    0   16 2035    3    0 0.009250243  [ (0+16+3+0) / (0+16+2035+3+0) ]
+## D    0    0   28 1899    3 0.016062176  [ (0+0+28+3) / (0+0+28+1899+3) ]
+## E    0    0    4    4 2157 0.003695150  [ (0+0+4+4)  / (0+0+4+4+2157)  ]
+
+CalcOOB = ((3+0+0+1)+(12+7+0+0)+(0+16+3+0)+(0+0+28+3)+(0+0+4+4)) /
+          ((3344+3+0+0+1)+(12+2260+7+0+0)+(0+16+2035+3+0)+(0+0+28+1899+3)+(0+0+4+4+2157))
+
+cat(paste0("Calculated OOB error rate: ",round(CalcOOB * 100, 2), "%"))
+```
+
+The change in class error rates can be charted in relation to the number of trees
+added to the model, you can see that the OOB error rate is an average:
+
+```{r fig.width=8, fig.height=6}
+## https://github.com/ua-snap/shiny-apps/tree/master/random_forest_example/external/appSourceFiles
+errorRatePlot <- function(err,clrs,fontsize,title=""){
+    fontsize <- as.numeric(fontsize)
+    errors.dat <- cbind(1:nrow(err), suppressMessages(melt(data.frame(err))))
+    names(errors.dat) <- c("Trees","Class","Error")
+    errors.dat$Class <- factor(as.character(errors.dat$Class))
+    g1 <- ggplot(data=errors.dat,aes(x=Trees,y=Error,colour=Class,group=Class,order=Class)) +
+        theme_grey(base_size=fontsize) +
+        theme(legend.position="top") +
+        scale_colour_manual(values=clrs[1:(nlevels(errors.dat$Class))]) +
+        geom_line(size=1) +
+        labs(y="Error Rate") +
+        ggtitle(title)
+
+    print(g1)
+}
+
+errorRatePlot(rf$err.rate,
+              clrs = c("red", "blue", "magenta", "brown", "green", "black"),
+              fontsize = 12,
+              title = "Preliminary Model of all variables\nError rates per Tree")
+```
+
+The error rate plot indicates that after around 200 trees there is little further
+improvement gained by adding more trees. We can look at the error rates in more 
+detail at around 200:
+
+```{r}
+# look for optimum number of trees
+tdf <- data.frame(round(rf$err.rate[185:210,], 7))
+tdf$Tree <- c(185:210)
+tdf <- tdf[, c(7,2,3,4,5,6,1)]
+print(tdf, row.names = FALSE)
+```
+At 192 trees we have the lowest combination of errors over all classes, with an
+OOB error rate of `r paste0(round(rf$err.rate[192,1] * 100, 2), "%")`, so we could
+specify 192 trees to our Random Forest model.
+
+## Appendix D - Detail of Importance analysis
+
+
+#### Top 17 variables model with 500 trees
+```{r}
+print(rf17final)
+```
+
+#### Top 17 variables model with 192 trees
+```{r}
+print(rf17.192final)
+```
+
+#### Top 7 variables model with 500 trees
+```{r}
+print(rf7final)
+```
+
+#### Top 7 variables model with 192 trees
+```{r}
+print(rf7.192final)
+```
+
+## Appendix E - Creation of box plots of variables per classe
 ```{r eval=FALSE}
-p1  <- ggplot(training, aes(x=classe, y=roll_belt, fill=classe)) + 
+p1  <- ggplot(training, aes(x=classe, y=roll_belt, fill=classe)) +
         geom_boxplot() + guides(fill=FALSE)
-p2  <- ggplot(training, aes(x=classe, y=yaw_belt, fill=classe)) + 
+p2  <- ggplot(training, aes(x=classe, y=yaw_belt, fill=classe)) +
         geom_boxplot() + guides(fill=FALSE)
-p3  <- ggplot(training, aes(x=classe, y=pitch_forearm, fill=classe)) + 
+p3  <- ggplot(training, aes(x=classe, y=pitch_forearm, fill=classe)) +
         geom_boxplot() + guides(fill=FALSE)
-p4  <- ggplot(training, aes(x=classe, y=magnet_dumbbell_z, fill=classe)) + 
+p4  <- ggplot(training, aes(x=classe, y=magnet_dumbbell_z, fill=classe)) +
         geom_boxplot() + guides(fill=FALSE)
-p5  <- ggplot(training, aes(x=classe, y=pitch_belt, fill=classe)) + 
+p5  <- ggplot(training, aes(x=classe, y=pitch_belt, fill=classe)) +
         geom_boxplot() + guides(fill=FALSE)
-p6  <- ggplot(training, aes(x=classe, y=magnet_dumbbell_y, fill=classe)) + 
+p6  <- ggplot(training, aes(x=classe, y=magnet_dumbbell_y, fill=classe)) +
         geom_boxplot() + guides(fill=FALSE)
-p7  <- ggplot(training, aes(x=classe, y=roll_forearm, fill=classe)) + 
+p7  <- ggplot(training, aes(x=classe, y=roll_forearm, fill=classe)) +
         geom_boxplot() + guides(fill=FALSE)
-p8  <- ggplot(training, aes(x=classe, y=magnet_dumbbell_x, fill=classe)) + 
+p8  <- ggplot(training, aes(x=classe, y=magnet_dumbbell_x, fill=classe)) +
         geom_boxplot() + guides(fill=FALSE)
-p9  <- ggplot(training, aes(x=classe, y=accel_dumbbell_y, fill=classe)) + 
+p9  <- ggplot(training, aes(x=classe, y=accel_dumbbell_y, fill=classe)) +
         geom_boxplot() + guides(fill=FALSE)
-p10 <- ggplot(training, aes(x=classe, y=roll_dumbbell, fill=classe)) + 
+p10 <- ggplot(training, aes(x=classe, y=roll_dumbbell, fill=classe)) +
         geom_boxplot() + guides(fill=FALSE)
-p11 <- ggplot(training, aes(x=classe, y=magnet_belt_y, fill=classe)) + 
+p11 <- ggplot(training, aes(x=classe, y=magnet_belt_y, fill=classe)) +
         geom_boxplot() + guides(fill=FALSE)
-p12 <- ggplot(training, aes(x=classe, y=magnet_belt_z, fill=classe)) + 
+p12 <- ggplot(training, aes(x=classe, y=magnet_belt_z, fill=classe)) +
         geom_boxplot() + guides(fill=FALSE)
 
 # courtesy: http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)
@@ -438,62 +653,62 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
     }
 }
 
-multiplot(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, 
+multiplot(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12,
           layout=matrix(c(1,2,3,4,5,6,7,8,9,10,11,12), nrow=3, byrow=TRUE))
 
 ```
 
 
-## Appendix D - examples of the Random Forest tree construction
+## Appendix F - examples of the Random Forest tree construction
 These examples are of illustrative purpose only, the complex "black box" approach
 taken by Random Forest does not lend itself to any useful analysis of these kinds
 of tables and charts.
 
-Extract of the first 48 decisions of the first Random Forest tree
+#### Extract of the first 48 decisions of the first Random Forest tree
 ```{r}
 suppressPackageStartupMessages({
     library(rattle)
-})    
-head(treeset.randomForest(rffinal, n=1, root=1, format="R"), 48)
+})
+head(treeset.randomForest(rf17final, n=1, root=1, format="R"), 48)
 ```
 
-Dendrogram of the first Random Forest tree
+#### Dendrogram of the first Random Forest tree
 ```{r fig.width=10, fig.height=8}
 # http://stats.stackexchange.com/questions/2344/best-way-to-present-a-random-forest-in-a-publication
 to.dendrogram <- function(dfrep,rownum=1,height.increment=0.1){
-    
+
     if(dfrep[rownum,'status'] == -1){
         rval <- list()
-        
+
         attr(rval,"members") <- 1
         attr(rval,"height") <- 0.0
         attr(rval,"label") <- dfrep[rownum,'prediction']
         attr(rval,"leaf") <- TRUE
-        
+
     }else{##note the change "to.dendrogram" and not "to.dendogram"
         left <- to.dendrogram(dfrep,dfrep[rownum,'left daughter'],height.increment)
         right <- to.dendrogram(dfrep,dfrep[rownum,'right daughter'],height.increment)
         rval <- list(left,right)
-        
+
         attr(rval,"members") <- attr(left,"members") + attr(right,"members")
         attr(rval,"height") <- max(attr(left,"height"),attr(right,"height")) + height.increment
         attr(rval,"leaf") <- FALSE
         attr(rval,"edgetext") <- dfrep[rownum,'split var']
     }
-   
+
     class(rval) <- "dendrogram"
-    
+
     return(rval)
-}   
+}
 
 if(file.exists("rffinaltree.rds")) {
     tree <- readRDS("rffinaltree.rds")
 } else {
-    tree <- getTree(rffinal,1,labelVar=TRUE)
+    tree <- getTree(rf17final,1,labelVar=TRUE)
     saveRDS(tree, file = "rffinaltree.rds")
 }
 
-tree <- getTree(rffinal,1,labelVar=TRUE)
+tree <- getTree(rf17final,1,labelVar=TRUE)
 d <- to.dendrogram(tree)
 plot(d,center=TRUE,leaflab='none',edgePar=list(t.cex=0.7,p.col=NA,p.lty=0))
 ```
