@@ -177,7 +177,9 @@ img {
 <pre class="r"><code>testA$prediction &lt;- predict(rf17final, testA)
 hitRows &lt;- which(testA$prediction == testA$classe)
 missRows &lt;- which(testA$prediction != testA$classe)
-predictaccuracy &lt;- round((length(hitRows) / (length(hitRows) + length(missRows))) * 100, 2)</code></pre>
+predictaccuracy &lt;- round((length(hitRows) / (length(hitRows) + length(missRows))) * 100, 2)
+predictaccuracy </code></pre>
+<pre><code>## [1] 98.32</code></pre>
 <p>The accuracy of our final model when applied to the test data we created is 98.32%, very close to the estimated accuracy of 98.79% . We can now apply the model to the 20 test records in the supplied test data and make predictions to supply to the evaluation process on the Coursera course site. The predicted classes are not posted here, but upon posting there was a 100% success in prediction.</p>
 </div>
 <div id="conclusion" class="section level2">

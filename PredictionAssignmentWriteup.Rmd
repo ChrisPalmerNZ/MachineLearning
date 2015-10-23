@@ -341,6 +341,7 @@ testA$prediction <- predict(rf17final, testA)
 hitRows <- which(testA$prediction == testA$classe)
 missRows <- which(testA$prediction != testA$classe)
 predictaccuracy <- round((length(hitRows) / (length(hitRows) + length(missRows))) * 100, 2)
+predictaccuracy 
 ```
 
 The accuracy of our final model when applied to the test data we created is
