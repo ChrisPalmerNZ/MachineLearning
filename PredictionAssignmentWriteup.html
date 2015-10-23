@@ -141,7 +141,7 @@ img {
 ## C    1   17 2030    6    0 0.0116845180
 ## D    1    0   31 1895    3 0.0181347150
 ## E    0    1    3    4 2157 0.0036951501</code></pre>
-<p>The resulting model is very accurate with an out-of-bag (OOB) estimate of error rate of 0.72%, but using all of the variables may not be neccessary, we could decide to retain variables based on their importance…</p>
+<p>The resulting model is very accurate with an out-of-bag (OOB) estimate of error rate of 0.72%, but using all of the variables may not be necessary, we could decide to retain variables based on their importance…</p>
 </div>
 <div id="variables-importance" class="section level3">
 <h3>Variables Importance</h3>
@@ -279,13 +279,10 @@ if(file.exists(&quot;rf7.192model.rds&quot;)) {
 if(file.exists(&quot;rf17model.rds&quot;)) {
     rf17final &lt;- readRDS(&quot;rf17model.rds&quot;)
 } else {
-    rf17final &lt;- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm +
-                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y +
-                            roll_forearm + magnet_dumbbell_x + accel_dumbbell_y +
-                            roll_dumbbell + accel_dumbbell_y + accel_belt_z +
-                            magnet_belt_z + accel_forearm_x  + accel_dumbbell_z +
-                            roll_arm    
-                          , data=training, importance=TRUE)
+    rf17final &lt;- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm + magnet_dumbbell_z + 
+    pitch_belt  + magnet_dumbbell_y + roll_forearm + magnet_dumbbell_x + accel_dumbbell_y + roll_dumbbell + 
+    accel_dumbbell_y + accel_belt_z + magnet_belt_z + accel_forearm_x  + accel_dumbbell_z + roll_arm     
+  , data=training, importance=TRUE)
     saveRDS(rf17final, file = &quot;rf17model.rds&quot;)
 }
 
@@ -293,14 +290,11 @@ if(file.exists(&quot;rf17model.rds&quot;)) {
 if(file.exists(&quot;rf17.192model.rds&quot;)) {
     rf17.192final &lt;- readRDS(&quot;rf17.192model.rds&quot;)
 } else {
-    rf17.192final &lt;- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm +
-                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y +
-                            roll_forearm + magnet_dumbbell_x + accel_dumbbell_y +
-                            roll_dumbbell + accel_dumbbell_y + accel_belt_z +
-                            magnet_belt_z + accel_forearm_x  + accel_dumbbell_z +
-                            roll_arm    
-                          , data=training, importance=TRUE, ntree=192)
-    saveRDS(rf17.192final, file = &quot;rf17.192model.rds&quot;)
+    rf17.192final &lt;- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm + magnet_dumbbell_z + 
+    pitch_belt  + magnet_dumbbell_y + roll_forearm + magnet_dumbbell_x + accel_dumbbell_y + roll_dumbbell + 
+    accel_dumbbell_y + accel_belt_z + magnet_belt_z + accel_forearm_x  + accel_dumbbell_z + roll_arm    
+  , data=training, importance=TRUE, ntree=192)
+   saveRDS(rf17.192final, file = &quot;rf17.192model.rds&quot;)
 }</code></pre>
 </div>
 <div id="appendix-c---detailed-discussion-of-error-rates" class="section level2">

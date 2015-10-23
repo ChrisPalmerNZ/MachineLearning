@@ -203,7 +203,7 @@ if(file.exists("rfmodel192.rds")) {
 print(rf192)
 ```
 The resulting model is very accurate with an out-of-bag (OOB) estimate of error
-rate of 0.72%, but using all of the variables may not be neccessary, we could 
+rate of 0.72%, but using all of the variables may not be necessary, we could 
 decide to retain variables based on their importance...  
 
 ### Variables Importance
@@ -275,6 +275,7 @@ The final model we choose consists of 17 variables and 500 trees, based on havin
 the best OOB error rate (see appendix D).
 
 ```{r echo=FALSE}
+# Model using top 7 variables
 if(file.exists("rf7model.rds")) {
     rf7final <- readRDS("rf7model.rds")
 } else {
@@ -285,6 +286,7 @@ if(file.exists("rf7model.rds")) {
     saveRDS(rf7final, file = "rf7model.rds")
 }
 
+# Model using top 7 variables and 192 trees
 if(file.exists("rf7.192model.rds")) {
     rf7.192final <- readRDS("rf7.192model.rds")
 } else {
@@ -295,30 +297,26 @@ if(file.exists("rf7.192model.rds")) {
     saveRDS(rf7.192final, file = "rf7.192model.rds")
 }
 
+# Model using top 17 variables
 if(file.exists("rf17model.rds")) {
     rf17final <- readRDS("rf17model.rds")
 } else {
-    rf17final <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm +
-                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y +
-                            roll_forearm + magnet_dumbbell_x + accel_dumbbell_y +
-                            roll_dumbbell + accel_dumbbell_y + accel_belt_z +
-                            magnet_belt_z + accel_forearm_x  + accel_dumbbell_z +
-                            roll_arm    
-                          , data=training, importance=TRUE)
+    rf17final <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm + magnet_dumbbell_z + 
+    pitch_belt  + magnet_dumbbell_y + roll_forearm + magnet_dumbbell_x + accel_dumbbell_y + roll_dumbbell + 
+    accel_dumbbell_y + accel_belt_z + magnet_belt_z + accel_forearm_x  + accel_dumbbell_z + roll_arm     
+  , data=training, importance=TRUE)
     saveRDS(rf17final, file = "rf17model.rds")
 }
 
+# Model using top 7 variables and 192 trees
 if(file.exists("rf17.192model.rds")) {
     rf17.192final <- readRDS("rf17.192model.rds")
 } else {
-    rf17.192final <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm +
-                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y +
-                            roll_forearm + magnet_dumbbell_x + accel_dumbbell_y +
-                            roll_dumbbell + accel_dumbbell_y + accel_belt_z +
-                            magnet_belt_z + accel_forearm_x  + accel_dumbbell_z +
-                            roll_arm    
-                          , data=training, importance=TRUE, ntree=192)
-    saveRDS(rf17.192final, file = "rf17.192model.rds")
+    rf17.192final <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm + magnet_dumbbell_z + 
+    pitch_belt  + magnet_dumbbell_y + roll_forearm + magnet_dumbbell_x + accel_dumbbell_y + roll_dumbbell + 
+    accel_dumbbell_y + accel_belt_z + magnet_belt_z + accel_forearm_x  + accel_dumbbell_z + roll_arm    
+  , data=training, importance=TRUE, ntree=192)
+   saveRDS(rf17.192final, file = "rf17.192model.rds")
 }
 
 ```
@@ -466,13 +464,10 @@ if(file.exists("rf7.192model.rds")) {
 if(file.exists("rf17model.rds")) {
     rf17final <- readRDS("rf17model.rds")
 } else {
-    rf17final <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm +
-                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y +
-                            roll_forearm + magnet_dumbbell_x + accel_dumbbell_y +
-                            roll_dumbbell + accel_dumbbell_y + accel_belt_z +
-                            magnet_belt_z + accel_forearm_x  + accel_dumbbell_z +
-                            roll_arm    
-                          , data=training, importance=TRUE)
+    rf17final <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm + magnet_dumbbell_z + 
+    pitch_belt  + magnet_dumbbell_y + roll_forearm + magnet_dumbbell_x + accel_dumbbell_y + roll_dumbbell + 
+    accel_dumbbell_y + accel_belt_z + magnet_belt_z + accel_forearm_x  + accel_dumbbell_z + roll_arm     
+  , data=training, importance=TRUE)
     saveRDS(rf17final, file = "rf17model.rds")
 }
 
@@ -480,14 +475,11 @@ if(file.exists("rf17model.rds")) {
 if(file.exists("rf17.192model.rds")) {
     rf17.192final <- readRDS("rf17.192model.rds")
 } else {
-    rf17.192final <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm +
-                            magnet_dumbbell_z  + pitch_belt  + magnet_dumbbell_y +
-                            roll_forearm + magnet_dumbbell_x + accel_dumbbell_y +
-                            roll_dumbbell + accel_dumbbell_y + accel_belt_z +
-                            magnet_belt_z + accel_forearm_x  + accel_dumbbell_z +
-                            roll_arm    
-                          , data=training, importance=TRUE, ntree=192)
-    saveRDS(rf17.192final, file = "rf17.192model.rds")
+    rf17.192final <- randomForest(classe ~ roll_belt + yaw_belt + pitch_forearm + magnet_dumbbell_z + 
+    pitch_belt  + magnet_dumbbell_y + roll_forearm + magnet_dumbbell_x + accel_dumbbell_y + roll_dumbbell + 
+    accel_dumbbell_y + accel_belt_z + magnet_belt_z + accel_forearm_x  + accel_dumbbell_z + roll_arm    
+  , data=training, importance=TRUE, ntree=192)
+   saveRDS(rf17.192final, file = "rf17.192model.rds")
 }
 
 ```
