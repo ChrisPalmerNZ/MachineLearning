@@ -171,6 +171,16 @@ if(file.exists("rfmodel.rds")) {
     rf<-randomForest(classe ~ ., data=training, keep.inbag = TRUE, importance=TRUE)
     saveRDS(rf, file = "rfmodel.rds")
 }
+
+# OOB error rate of the rf model
+rfoob <- ( (sum(rf$confusion[1, 1:5]) - rf$confusion[1, 1]) + 
+           (sum(rf$confusion[2, 1:5]) - rf$confusion[2, 2]) + 
+           (sum(rf$confusion[3, 1:5]) - rf$confusion[3, 3]) + 
+           (sum(rf$confusion[4, 1:5]) - rf$confusion[4, 4]) + 
+           (sum(rf$confusion[5, 1:5]) - rf$confusion[5, 5]) ) / 
+    sum(rf$confusion[1:5, 1:5])
+
+rfoob <- round(rfoob * 100, 2)
 ```
 ```{r}
 print(rf)
@@ -185,11 +195,6 @@ in Appendix C. Random Forest estimates errors as an out-of-bag error rate, and
 the designers of the process have concluded that OOB has proven to be unbiased 
 in many tests, with very close alignment between estimated and actual error rates.
 
-In Appendix C we examine the error rates and conclude that we could safely 
-reduce our trees from 500 to 192 without losing too much precision. Creating a 
-Random Forest of 192 trees over all the variables reduces the size of it from 
-48.4 Mb to 20.2 Mb, but increases OOB error by only 0.07%: 
-
 ```{r echo=FALSE}
 if(file.exists("rfmodel192.rds")) {
     rf192 <- readRDS("rfmodel192.rds")
@@ -198,13 +203,28 @@ if(file.exists("rfmodel192.rds")) {
     rf192 <- randomForest(classe ~ ., data=training, keep.inbag = TRUE, importance=TRUE, ntree=192)
     saveRDS(rf192, file = "rfmodel192.rds")
 }
+
+# OOB error rate of the rf192 model
+rf192oob <- ( (sum(rf192$confusion[1, 1:5]) - rf192$confusion[1, 1]) + 
+             (sum(rf192$confusion[2, 1:5]) - rf192$confusion[2, 2]) + 
+             (sum(rf192$confusion[3, 1:5]) - rf192$confusion[3, 3]) + 
+             (sum(rf192$confusion[4, 1:5]) - rf192$confusion[4, 4]) + 
+             (sum(rf192$confusion[5, 1:5]) - rf192$confusion[5, 5]) ) / 
+    sum(rf192$confusion[1:5, 1:5])
+
+rf192oob <- round(rf192oob * 100, 2)
 ```
+In Appendix C we examine the error rates and conclude that we could safely 
+reduce our trees from 500 to 192 without losing too much precision. Creating a 
+Random Forest of 192 trees over all the variables reduces the size of it from 
+48.4 Mb to 20.2 Mb, but increases OOB error by only `r rf192oob - rfoob`%: 
+
 ```{r}
 print(rf192)
 ```
 The resulting model is very accurate with an out-of-bag (OOB) estimate of error
-rate of 0.72%, but using all of the variables may not be necessary, we could 
-decide to retain variables based on their importance...  
+rate of `r rf192oob`%, but using all of the variables may not be necessary, in fact could
+be overfitting, so we can retain fewer variables based on their importance...  
 
 ### Variables Importance
 See Appendix D for detail of the Importance analysis performed on various models.
@@ -308,6 +328,16 @@ if(file.exists("rf17model.rds")) {
     saveRDS(rf17final, file = "rf17model.rds")
 }
 
+# OOB error rate of the rf17final model
+rf17oob <- ( (sum(rf17final$confusion[1, 1:5]) - rf17final$confusion[1, 1]) + 
+             (sum(rf17final$confusion[2, 1:5]) - rf17final$confusion[2, 2]) + 
+             (sum(rf17final$confusion[3, 1:5]) - rf17final$confusion[3, 3]) + 
+             (sum(rf17final$confusion[4, 1:5]) - rf17final$confusion[4, 4]) + 
+             (sum(rf17final$confusion[5, 1:5]) - rf17final$confusion[5, 5]) ) / 
+    sum(rf17final$confusion[1:5, 1:5])
+
+rf17oob <- round(rf17oob * 100, 2)
+
 # Model using top 7 variables and 192 trees
 if(file.exists("rf17.192model.rds")) {
     rf17.192final <- readRDS("rf17.192model.rds")
@@ -325,10 +355,10 @@ if(file.exists("rf17.192model.rds")) {
 print(rf17final)
 ```
 
-Using 17 variables increases the OOB error by only 1.07% over the all-variables 
-model, so we conclude that the final model can use just the top 17 variables, 
-delivering an estimated accuracy of 98.79% (100 - the 1.21 OOB error rate) over 
-the training data.
+Using 17 variables increases the OOB error by just `r rf17oob - rfoob`% over the 
+all-variables model, so we conclude that the final model can use just the top 
+17 variables, delivering an estimated accuracy of `r 100 - rf17oob`% 
+(100 - the `r rf17oob`% OOB error rate) over the training data.
 
 ## Testing and using the model prediction
 Using the test data we have put aside from our supplied training data, we apply
@@ -338,19 +368,36 @@ actual classe variable:
 testA$prediction <- predict(rf17final, testA)
 hitRows <- which(testA$prediction == testA$classe)
 missRows <- which(testA$prediction != testA$classe)
-predictaccuracy <- round((length(hitRows) / (length(hitRows) + length(missRows))) * 100, 2)
-predictaccuracy 
+predictA_accuracy <- round((length(hitRows) / (length(hitRows) + length(missRows))) * 100, 2)
+predictA_accuracy 
+```
+```{r}
+testB$prediction <- predict(rf17final, testB)
+hitRows <- which(testB$prediction == testB$classe)
+missRows <- which(testB$prediction != testB$classe)
+predictB_accuracy <- round((length(hitRows) / (length(hitRows) + length(missRows))) * 100, 2)
+predictB_accuracy 
 ```
 
-The accuracy of our final model when applied to the test data we created is
-`r predictaccuracy`%, very close to the estimated accuracy of 98.79% . We can
-now apply the model to the 20 test records in the supplied test data and make
-predictions to supply to the evaluation process on the Coursera course site.
+The accuracy of our final model when applied to the test data A we created is
+`r predictA_accuracy`%, and against test data B is `r predictB_accuracy`%. These
+are very close to the estimated accuracy of 98.79% (test A is less accurate, 
+test B is more accurate, their average is `r (predictA_accuracy + predictB_accuracy) / 2`%). 
+We can now apply the model to the 20 test records in the supplied test data and 
+make predictions to supply to the evaluation process on the Coursera course site.
+
 The predicted classes are not posted here, but upon posting there was a 100%
 success in prediction.
 ```{r echo=FALSE, eval=FALSE}
 predict(rf17final, testdf)
 ```
+
+## Summary of final model
+1. Random Forest model that uses 17 variables and 500 trees
+2. Estimated out of sample error (OOB) rate is `r rf17oob`%
+3. Estimated accuracy of `r 100 - rf17oob`%
+4. Application to sampled test data has estimated accuracy of `r (predictA_accuracy + predictB_accuracy) / 2`%
+5. Application to supplied test data set had an accuracy of 100%
 
 ## Conclusion
 The predictions for the supplied test data were confirmed as accurate, so we can
@@ -429,6 +476,16 @@ if(file.exists("rfmodel.rds")) {
     saveRDS(rf, file = "rfmodel.rds")
 }
 
+# OOB error rate of the rf model
+rfoob <- ( (sum(rf$confusion[1, 1:5]) - rf$confusion[1, 1]) + 
+           (sum(rf$confusion[2, 1:5]) - rf$confusion[2, 2]) + 
+           (sum(rf$confusion[3, 1:5]) - rf$confusion[3, 3]) + 
+           (sum(rf$confusion[4, 1:5]) - rf$confusion[4, 4]) + 
+           (sum(rf$confusion[5, 1:5]) - rf$confusion[5, 5]) ) / 
+    sum(rf$confusion[1:5, 1:5])
+
+rfoob <- round(rfoob * 100, 2)
+
 # 2. Model using 192 trees
 if(file.exists("rfmodel192.rds")) {
     rf192 <- readRDS("rfmodel192.rds")
@@ -437,6 +494,16 @@ if(file.exists("rfmodel192.rds")) {
     rf192 <- randomForest(classe ~ ., data=training, keep.inbag = TRUE, importance=TRUE, ntree=192)
     saveRDS(rf192, file = "rfmodel192.rds")
 }
+
+# OOB error rate of the rf192 model
+rf192oob <- ( (sum(rf192$confusion[1, 1:5]) - rf192$confusion[1, 1]) + 
+             (sum(rf192$confusion[2, 1:5]) - rf192$confusion[2, 2]) + 
+             (sum(rf192$confusion[3, 1:5]) - rf192$confusion[3, 3]) + 
+             (sum(rf192$confusion[4, 1:5]) - rf192$confusion[4, 4]) + 
+             (sum(rf192$confusion[5, 1:5]) - rf192$confusion[5, 5]) ) / 
+    sum(rf192$confusion[1:5, 1:5])
+
+rf192oob <- round(rf192oob * 100, 2)
 
 # 3. Model using top 7 variables
 if(file.exists("rf7model.rds")) {
@@ -470,6 +537,16 @@ if(file.exists("rf17model.rds")) {
   , data=training, importance=TRUE)
     saveRDS(rf17final, file = "rf17model.rds")
 }
+
+# OOB error rate of the rf17final model
+rf17oob <- ( (sum(rf17final$confusion[1, 1:5]) - rf17final$confusion[1, 1]) + 
+             (sum(rf17final$confusion[2, 1:5]) - rf17final$confusion[2, 2]) + 
+             (sum(rf17final$confusion[3, 1:5]) - rf17final$confusion[3, 3]) + 
+             (sum(rf17final$confusion[4, 1:5]) - rf17final$confusion[4, 4]) + 
+             (sum(rf17final$confusion[5, 1:5]) - rf17final$confusion[5, 5]) ) / 
+    sum(rf17final$confusion[1:5, 1:5])
+
+rf17oob <- round(rf17oob * 100, 2)
 
 # 6. Model using top 7 variables and 192 trees
 if(file.exists("rf17.192model.rds")) {
@@ -542,19 +619,20 @@ errorRatePlot <- function(err,clrs,fontsize,title=""){
     errors.dat <- cbind(1:nrow(err), suppressMessages(melt(data.frame(err))))
     names(errors.dat) <- c("Trees","Class","Error")
     errors.dat$Class <- factor(as.character(errors.dat$Class))
-    g1 <- ggplot(data=errors.dat,aes(x=Trees,y=Error,colour=Class,group=Class,order=Class)) +
+    g1 <- ggplot(data=errors.dat, aes(x=Trees,y=Error,colour=Class,group=Class,order=Class)) + 
+        coord_trans(y="log") +
         theme_grey(base_size=fontsize) +
         theme(legend.position="top") +
         scale_colour_manual(values=clrs[1:(nlevels(errors.dat$Class))]) +
-        geom_line(size=1) +
-        labs(y="Error Rate") +
+        geom_line(size=0.7) +
+        labs(y="Error Rate (log scale)") +
         ggtitle(title)
 
     print(g1)
 }
 
 errorRatePlot(rf$err.rate,
-              clrs = c("red", "blue", "magenta", "brown", "green", "black"),
+              clrs = c("red", "magenta", "blue", "brown", "darkgreen", "black"),
               fontsize = 12,
               title = "Preliminary Model of all variables\nError rates per Tree")
 ```
