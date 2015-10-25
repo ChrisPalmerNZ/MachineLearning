@@ -371,16 +371,14 @@ the model, and compare the predicted value delivered by the model against the
 actual classe variable:
 ```{r}
 testA$prediction <- predict(rf17final, testA)
-hitRows <- which(testA$prediction == testA$classe)
-missRows <- which(testA$prediction != testA$classe)
-predictA_accuracy <- round((length(hitRows) / (length(hitRows) + length(missRows))) * 100, 2)
+cmrfA <- confusionMatrix(testA$prediction, testA$classe)
+predictA_accuracy <- round(cmrfA$overall['Accuracy'] * 100, 2)
 predictA_accuracy 
 ```
 ```{r}
 testB$prediction <- predict(rf17final, testB)
-hitRows <- which(testB$prediction == testB$classe)
-missRows <- which(testB$prediction != testB$classe)
-predictB_accuracy <- round((length(hitRows) / (length(hitRows) + length(missRows))) * 100, 2)
+cmrfB <- confusionMatrix(testB$prediction, testB$classe)
+predictB_accuracy <- round(cmrfB$overall['Accuracy'] * 100, 2)
 predictB_accuracy 
 ```
 
