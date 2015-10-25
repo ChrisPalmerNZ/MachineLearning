@@ -224,7 +224,7 @@ print(rf192)
 ```
 The resulting model is very accurate with an out-of-bag (OOB) estimate of error
 rate of `r rf192oob`%, but using all of the variables may not be necessary, in fact could
-be overfitting, so we can retain fewer variables based on their importance...  
+be over-fitting, so we can retain fewer variables based on their importance...  
 
 ### Variables Importance
 See Appendix D for detail of the Importance analysis performed on various models.
@@ -241,8 +241,11 @@ To get an idea of why these variables might be important we chart distribution
 information of the most important dozen variables per class. We can observe that
 for each variable there are distinguishing features per class, and very often one
 class in particular is significant per variable, in terms of the mean and range of
-the variable. One can visualize the importance of these values in making decisions
-about tree node construction (see Appendix E for the R code used to create this chart):
+the variable. For example note that the mean of class A for the first two 
+variables, roll_belt and yaw_belt, is near zero, and the mean of class E is above 
+all of the others; note also the variation in means for the roll_forearm variable. 
+One can visualize the importance of these values in making decisions about tree 
+node construction (see Appendix E for the R code used to create this chart):
 ```{r echo=FALSE, fig.width=10, fig.height=9}
 p1  <- ggplot(training, aes(x=classe, y=roll_belt, fill=classe)) + geom_boxplot() + guides(fill=FALSE)
 p2  <- ggplot(training, aes(x=classe, y=yaw_belt, fill=classe)) + geom_boxplot() + guides(fill=FALSE)
@@ -381,8 +384,12 @@ predictB_accuracy
 
 The accuracy of our final model when applied to the test data A we created is
 `r predictA_accuracy`%, and against test data B is `r predictB_accuracy`%. These
-are very close to the estimated accuracy of 98.79% (test A is less accurate, 
-test B is more accurate, their average is `r (predictA_accuracy + predictB_accuracy) / 2`%). 
+are very close to the estimated accuracy of `r 100 - rf17oob`% (test A is less 
+accurate, test B is more accurate, their average is `r (predictA_accuracy + predictB_accuracy) / 2`%), 
+and we can consider the remainder of subtracting this from 100, which is 
+`r 100 - ((predictA_accuracy + predictB_accuracy) / 2)`%, as our out-of-sample 
+error rate after manual cross validation. 
+
 We can now apply the model to the 20 test records in the supplied test data and 
 make predictions to supply to the evaluation process on the Coursera course site.
 
@@ -393,11 +400,12 @@ predict(rf17final, testdf)
 ```
 
 ## Summary of final model
-1. Random Forest model that uses 17 variables and 500 trees
-2. Estimated out of sample error (OOB) rate is `r rf17oob`%
-3. Estimated accuracy of `r 100 - rf17oob`%
-4. Application to sampled test data has estimated accuracy of `r (predictA_accuracy + predictB_accuracy) / 2`%
-5. Application to supplied test data set had an accuracy of 100%
+- Random Forest model that uses 17 variables and 500 trees
+- Estimated out of sample error (OOB) rate is `r rf17oob`%
+- Estimated accuracy of `r 100 - rf17oob`%
+- Application to sampled test data has estimated accuracy of `r (predictA_accuracy + predictB_accuracy) / 2`%
+- Our final cross validated out-of-sample error rate estimate is `r 100 - ((predictA_accuracy + predictB_accuracy) / 2)`%
+- Application to supplied test data set had an accuracy of 100%
 
 ## Conclusion
 The predictions for the supplied test data were confirmed as accurate, so we can
@@ -585,7 +593,7 @@ times that j is not equal to the true class of n averaged over all cases is the
 OOB error rate is the average of the individual errors of each class, which can
 be seen on the confusion matrix.
 
-On order to illustrate this we have added a column "Calculated error rates" to the
+In order to illustrate this we have added a column "Calculated error rates" to the
 confusion matrix produced below, which shows how each class.error value is
 obtained by taking the predictions not in the class (i.e. "out of bag"") and dividing
 by all of the instances of the class (i.e. all numbers in the current row).
@@ -610,7 +618,9 @@ cat(paste0("Calculated OOB error rate: ",round(CalcOOB * 100, 2), "%"))
 ```
 
 The change in class error rates can be charted in relation to the number of trees
-added to the model, you can see that the OOB error rate is an average:
+added to the model, you can see that the OOB error rate is an average. Note that 
+a log scale is used to help visualise the errors as trees are incremented, but
+that these values are very small and near to zero.
 
 ```{r fig.width=8, fig.height=6}
 ## https://github.com/ua-snap/shiny-apps/tree/master/random_forest_example/external/appSourceFiles
