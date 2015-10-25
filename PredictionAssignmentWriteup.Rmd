@@ -74,8 +74,10 @@ the acceleration, variance of the gyro and maximum and minimum of the magnetomet
 and in the glove - the sum of the pitch and the maximum and minimum of the gyro.
 
 It was decided to likewise use a Random Forest algorithm, utilizing the R library
-randomForest. If time permits an evaluation of other machine learning algorithms
-will be performed for a comparison to the Random Forest approach.
+randomForest. A comparison study was conducted using train with method="rf" from 
+the caret package, the results were very similar but the time it took for train
+to work was 42 minutes, compared to just a few minutes using the randomForest 
+library. The results of using train are elaborated in appendix G.
 
 ## Data Analysis
 A fairly detailed data analysis was initially begun on the training data. It soon
@@ -793,3 +795,27 @@ tree <- getTree(rf17final,1,labelVar=TRUE)
 d <- to.dendrogram(tree)
 plot(d,center=TRUE,leaflab='none',edgePar=list(t.cex=0.7,p.col=NA,p.lty=0))
 ```
+
+## Appendix G - using train from the caret package
+The same process was explored using train from the caret package. The results were
+similar but since building the model was very much longer (42 minutes vs just a few
+minutes required for randomForest), I decided to go with the more efficient method.
+
+Following are the code and summary results of using train, the OOB error rate is 
+marginally worse than the model obtained using the randomForest library directly:
+```{r}
+if(file.exists("rfmodelCARET.rds")) {
+    rfmodel <- readRDS("rfmodelCARET.rds")
+} else {
+    rfmodel <- train(classe~., data=training, method="rf", verbose=FALSE, type="none")
+    saveRDS(rfmodel, file = "rfmodelCARET.rds")
+}
+print(rfmodel)
+print(rfmodel$finalModel)
+varImpPlot(rfmodel$finalModel, cex = 0.8, pch=19)
+errorRatePlot(rfmodel$finalModel$err.rate,
+           clrs = c("red", "magenta", "blue", "brown", "darkgreen", "black"),
+           fontsize = 12,
+           title = "Caret RF Model of all variables\nError rates per Tree")
+```
+
