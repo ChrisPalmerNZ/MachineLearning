@@ -175,17 +175,26 @@ img {
 <h2>Testing and using the model prediction</h2>
 <p>Using the test data we have put aside from our supplied training data, we apply the model, and compare the predicted value delivered by the model against the actual classe variable:</p>
 <pre class="r"><code>testA$prediction &lt;- predict(rf17final, testA)
-hitRows &lt;- which(testA$prediction == testA$classe)
-missRows &lt;- which(testA$prediction != testA$classe)
-predictA_accuracy &lt;- round((length(hitRows) / (length(hitRows) + length(missRows))) * 100, 2)
+cmrfA &lt;- confusionMatrix(testA$prediction, testA$classe)
+predictA_accuracy &lt;- round(cmrfA$overall['Accuracy'] * 100, 2)
 predictA_accuracy </code></pre>
-<pre><code>## [1] 98.55</code></pre>
+<pre><code>## Accuracy 
+##    98.55</code></pre>
+<pre class="r"><code># hitRows &lt;- which(testA$prediction == testA$classe)
+# missRows &lt;- which(testA$prediction != testA$classe)
+# predictA_accuracy &lt;- round((length(hitRows) / (length(hitRows) + length(missRows))) * 100, 2)
+# predictA_accuracy </code></pre>
 <pre class="r"><code>testB$prediction &lt;- predict(rf17final, testB)
-hitRows &lt;- which(testB$prediction == testB$classe)
-missRows &lt;- which(testB$prediction != testB$classe)
-predictB_accuracy &lt;- round((length(hitRows) / (length(hitRows) + length(missRows))) * 100, 2)
+# hitRows &lt;- which(testB$prediction == testB$classe)
+# missRows &lt;- which(testB$prediction != testB$classe)
+# predictB_accuracy &lt;- round((length(hitRows) / (length(hitRows) + length(missRows))) * 100, 2)
+# predictB_accuracy 
+
+cmrfB &lt;- confusionMatrix(testB$prediction, testB$classe)
+predictB_accuracy &lt;- round(cmrfB$overall['Accuracy'] * 100, 2)
 predictB_accuracy </code></pre>
-<pre><code>## [1] 98.95</code></pre>
+<pre><code>## Accuracy 
+##    98.95</code></pre>
 <p>The accuracy of our final model when applied to the test data A we created is 98.55%, and against test data B is 98.95%. These are very close to the estimated accuracy of 98.79% (test A is less accurate, test B is more accurate, their average is 98.75%), and we can consider the remainder of subtracting this from 100, which is 1.25%, as our out-of-sample error rate after manual cross validation.</p>
 <p>We can now apply the model to the 20 test records in the supplied test data and make predictions to supply to the evaluation process on the Coursera course site.</p>
 <p>The predicted classes are not posted here, but upon posting there was a 100% success in prediction.</p>
