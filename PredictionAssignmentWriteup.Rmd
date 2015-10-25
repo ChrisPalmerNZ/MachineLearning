@@ -403,8 +403,8 @@ predict(rf17final, testdf)
 - Random Forest model that uses 17 variables and 500 trees
 - Estimated out of sample error (OOB) rate is `r rf17oob`%
 - Estimated accuracy of `r 100 - rf17oob`%
-- Application to sampled test data has estimated accuracy of `r (predictA_accuracy + predictB_accuracy) / 2`%
-- Our final cross validated out-of-sample error rate estimate is `r 100 - ((predictA_accuracy + predictB_accuracy) / 2)`%
+- Application to sampled test data results in an estimated accuracy of `r (predictA_accuracy + predictB_accuracy) / 2`%
+- The cross validated out-of-sample error rate estimate is `r 100 - ((predictA_accuracy + predictB_accuracy) / 2)`%
 - Application to supplied test data set had an accuracy of 100%
 
 ## Conclusion
